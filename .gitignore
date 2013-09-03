@@ -3,3 +3,4 @@ asspath
 .settings/
 *.springBeans
 .data/
+target/
