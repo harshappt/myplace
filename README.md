@@ -1,0 +1,1 @@
+Demonstrates Spring Hateoas. 

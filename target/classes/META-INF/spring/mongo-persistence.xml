@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+
+	<mongo:repositories base-package="com.harsha.myplace" />
+	<context:component-scan base-package="com.harsha.myplace" />
+
+	<mongo:mongo id="mongo" host="${mongo.host}" />
+	<mongo:mongo write-concern="SAFE"/>
+
+	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate"
+		c:mongo-ref="mongo" c:databaseName="${mongo.db}" p:writeConcern="mongoTemplate"/>
+
+	<beans profile="dev,test">
+		<context:property-placeholder location="classpath:mongo_dev.properties" />
+	</beans>
+
+	<beans profile="prod">
+		<context:property-placeholder location="classpath:mongo.properties" />
+	</beans>
+
+</beans>
