@@ -1,11 +1,16 @@
 package com.harsha.myplace.controllers;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import net.minidev.json.JSONValue;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -33,8 +38,8 @@ import com.harsha.myplace.people.Person;
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration()
 @ContextHierarchy({
-		@ContextConfiguration(classes={RootApplicationContext.class}),
-		@ContextConfiguration(classes={DispatcherServletSubstitute.class}) })
+		@ContextConfiguration(classes = { RootApplicationContext.class }),
+		@ContextConfiguration(classes = { DispatcherServletSubstitute.class }) })
 @ActiveProfiles("test")
 public class PersonControllerIntegTest {
 
@@ -71,11 +76,25 @@ public class PersonControllerIntegTest {
 	public void testSave() throws Exception {
 		Person person = createPerson();
 		String string = JSONify(person);
-		ResultActions perform = mockmvc.perform(
-				post("/people").contentType(MediaType.APPLICATION_JSON)
-						.content(string));
-	
-				perform.andExpect(jsonPath("$.error").exists()).andDo(print());
+		ResultActions perform = mockmvc.perform(post("/people").contentType(
+				MediaType.APPLICATION_JSON).content(string));
+
+		perform.andExpect(jsonPath("$.id").exists()).andDo(print());
+	}
+
+	@Test
+	public void testFidnById() throws Exception {
+		Person person = createPerson();
+		String string = JSONify(person);
+		String contentAsString = mockmvc
+				.perform(
+						post("/people").contentType(MediaType.APPLICATION_JSON)
+								.content(string))
+				.andExpect(jsonPath("$.id").exists()).andReturn().getResponse()
+				.getContentAsString();
+		Map parse = (HashMap) JSONValue.parse(contentAsString);
+		mockmvc.perform(get("/people/{id}", parse.get("id")))
+				.andExpect(jsonPath("$.links").exists()).andDo(print());
 	}
 
 	private Person createPerson() throws JsonGenerationException,
@@ -97,5 +116,10 @@ public class PersonControllerIntegTest {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectWriter objectWriter = mapper.writer().withDefaultPrettyPrinter();
 		return objectWriter.writeValueAsString(obj);
+	}
+
+	private HashMap objectify(String string) {
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.convertValue(string, HashMap.class);
 	}
 }
